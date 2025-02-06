@@ -7,11 +7,11 @@ struct ProgressImage: Identifiable, Codable {
     let date: Date
     var note: String?
     
-    init(id: UUID = UUID(), spaceId: UUID, imageUrl: URL, note: String? = nil) {
+    init(id: UUID = UUID(), spaceId: UUID, imageUrl: URL, date: Date, note: String? = nil) {
         self.id = id
         self.spaceId = spaceId
         self.imageUrl = imageUrl
-        self.date = Date()
+        self.date = date
         self.note = note
     }
 } 

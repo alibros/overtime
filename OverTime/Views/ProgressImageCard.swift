@@ -70,6 +70,7 @@ struct ProgressImageCard_Previews: PreviewProvider {
         let dummyProgressImage = ProgressImage(
             spaceId: UUID(),
             imageUrl: URL(string: "https://via.placeholder.com/150")!,
+            date: Date(),
             note: "Sample Note"
         )
         return ProgressImageCard(progressImage: dummyProgressImage)

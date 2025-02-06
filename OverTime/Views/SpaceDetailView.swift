@@ -10,6 +10,7 @@ struct SpaceDetailView: View {
     @State private var showingComparisonView = false
     @State private var selectedFullScreenImage: ProgressImage? = nil
     @State private var showingEditSpace = false
+    @State private var isEditing = false
     
     var body: some View {
         ScrollView {
@@ -46,10 +47,26 @@ struct SpaceDetailView: View {
                 ]
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(sortedImages) { progressImage in
-                        Button {
-                            selectedFullScreenImage = progressImage
-                        } label: {
+                        ZStack(alignment: .topTrailing) {
                             ProgressImageCard(progressImage: progressImage)
+                                .onTapGesture {
+                                    if !isEditing {
+                                        selectedFullScreenImage = progressImage
+                                    }
+                                }
+                            
+                            if isEditing {
+                                Button(action: {
+                                    deleteImage(progressImage)
+                                }) {
+                                    Image(systemName: "trash")
+                                        .foregroundColor(.red)
+                                        .padding(8)
+                                        .background(Color.white.opacity(0.7))
+                                        .clipShape(Circle())
+                                }
+                                .padding(6)
+                            }
                         }
                     }
                 }
@@ -59,8 +76,13 @@ struct SpaceDetailView: View {
         .navigationTitle(space.name)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { showingEditSpace = true }) {
-                    Image(systemName: "gearshape")
+                HStack {
+                    Button(action: { showingEditSpace = true }) {
+                        Image(systemName: "gearshape")
+                    }
+                    Button(action: { isEditing.toggle() }) {
+                        Text(isEditing ? "Done" : "Edit")
+                    }
                 }
             }
         }
@@ -68,7 +90,8 @@ struct SpaceDetailView: View {
             CameraView(image: $selectedImages)
         }
         .sheet(isPresented: $showingImagePicker) {
-            DirectImagePicker(images: $selectedImages)
+            DirectImagePicker(images: $selectedImages, spaceId: space.id)
+                .environmentObject(viewModel)
         }
         .sheet(isPresented: $showingComparisonView) {
             ComparisonView(spaceId: space.id)
@@ -82,7 +105,7 @@ struct SpaceDetailView: View {
         .onChange(of: selectedImages) { newImages in
             for image in newImages {
                 if let url = saveImageToDocuments(image: image) {
-                    let progressImage = ProgressImage(spaceId: space.id, imageUrl: url)
+                    let progressImage = ProgressImage(spaceId: space.id, imageUrl: url, date: Date())
                     viewModel.addImage(progressImage, to: space.id)
                 }
             }
@@ -92,6 +115,12 @@ struct SpaceDetailView: View {
     
     private var sortedImages: [ProgressImage] {
         viewModel.progressImages[space.id]?.sorted(by: { $0.date < $1.date }) ?? []
+    }
+    
+    private func deleteImage(_ progressImage: ProgressImage) {
+        if let index = viewModel.progressImages[space.id]?.firstIndex(where: { $0.id == progressImage.id }) {
+            viewModel.progressImages[space.id]?.remove(at: index)
+        }
     }
     
     private func saveImageToDocuments(image: UIImage) -> URL? {
@@ -118,6 +147,7 @@ struct SpaceDetailView: View {
                 ProgressImage(
                     spaceId: dummySpace.id,
                     imageUrl: URL(string: "https://via.placeholder.com/150")!,
+                    date: Date(),
                     note: "Test"
                 )
             ]

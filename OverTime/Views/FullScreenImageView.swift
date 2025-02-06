@@ -36,7 +36,11 @@ struct FullScreenImageView: View {
 struct FullScreenImageView_Previews: PreviewProvider {
     static var previews: some View {
         // Dummy data for preview
-        let dummyProgressImage = ProgressImage(spaceId: UUID(), imageUrl: URL(string: "https://via.placeholder.com/600")!)
+        let dummyProgressImage = ProgressImage(
+            spaceId: UUID(),
+            imageUrl: URL(string: "https://via.placeholder.com/600")!,
+            date: Date()
+        )
         FullScreenImageView(progressImage: dummyProgressImage)
     }
 } 
